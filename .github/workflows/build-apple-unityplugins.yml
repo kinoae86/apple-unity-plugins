@@ -40,7 +40,7 @@ jobs:
       - name: Build Core and GameKit only
         run: |
           cd unityplugins
-          python3 build.py -m iOS iPhoneSimulator -p Core GameKit -k all
+          python3 build.py -m macOS iOS iPhoneSimulator -p Core GameKit -k all
 
       - name: List tgz output
         run: |
