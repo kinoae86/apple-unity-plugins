@@ -13,6 +13,8 @@ jobs:
         run: |
           git clone https://github.com/apple/unityplugins.git
           cd unityplugins
+          git fetch --tags
+          git checkout GameKit-3.0.2
           git submodule update --init --recursive
 
       - name: Setup Node
@@ -32,15 +34,10 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
           xcodebuild -version
 
-      - name: Show build help
-        run: |
-          cd unityplugins
-          python3 build.py --help || true
-
       - name: Build Core and GameKit only
         run: |
           cd unityplugins
-          python3 build.py -m macOS iOS iPhoneSimulator -p Core GameKit -k all
+          printf "n\n" | python3 build.py -m macOS iOS iPhoneSimulator -p Core GameKit -k all
 
       - name: List tgz output
         run: |
