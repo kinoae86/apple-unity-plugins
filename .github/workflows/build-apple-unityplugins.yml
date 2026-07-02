@@ -1,0 +1,38 @@
+name: Build Apple Unity Plugins
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Clone Apple Unity Plugins
+        run: |
+          git clone https://github.com/apple/unityplugins.git
+          cd unityplugins
+          git submodule update --init --recursive
+
+      - name: Show tools
+        run: |
+          python3 --version
+          xcodebuild -version
+          node -v || true
+          npm -v || true
+
+      - name: Build plugins
+        run: |
+          cd unityplugins
+          python3 build.py
+
+      - name: List Build output
+        run: |
+          find unityplugins/Build -name "*.tgz" -maxdepth 2 -type f -print
+
+      - name: Upload tgz artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apple-unityplugins-tgz
+          path: |
+            unityplugins/Build/*.tgz
