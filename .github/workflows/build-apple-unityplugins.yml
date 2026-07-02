@@ -1,11 +1,12 @@
-name: Build Apple Unity Plugins
+name: Build Apple Core GameKit
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15
+    timeout-minutes: 90
 
     steps:
       - name: Clone Apple Unity Plugins
@@ -14,25 +15,41 @@ jobs:
           cd unityplugins
           git submodule update --init --recursive
 
-      - name: Show tools
-        run: |
-          python3 --version
-          xcodebuild -version
-          node -v || true
-          npm -v || true
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-      - name: Build plugins
+      - name: Setup Unity
+        uses: buildalon/unity-setup@v2
+        with:
+          unity-version: 6000.0.48f1
+          build-targets: iOS
+          cache-installation: true
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Show build help
         run: |
           cd unityplugins
-          python3 build.py
+          python3 build.py --help || true
 
-      - name: List Build output
+      - name: Build Core and GameKit only
         run: |
-          find unityplugins/Build -name "*.tgz" -maxdepth 2 -type f -print
+          cd unityplugins
+          python3 build.py -m iOS iPhoneSimulator -p Core GameKit -k all
 
-      - name: Upload tgz artifacts
+      - name: List tgz output
+        run: |
+          find unityplugins/Build -name "*.tgz" -type f -print
+
+      - name: Upload Core and GameKit tgz
         uses: actions/upload-artifact@v4
         with:
-          name: apple-unityplugins-tgz
+          name: apple-core-gamekit-tgz
           path: |
-            unityplugins/Build/*.tgz
+            unityplugins/Build/com.apple.unityplugin.core*.tgz
+            unityplugins/Build/com.apple.unityplugin.gamekit*.tgz
